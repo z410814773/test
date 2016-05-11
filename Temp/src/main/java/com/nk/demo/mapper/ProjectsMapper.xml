@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nk.demo.mapper.ProjectsMapper">
+	<resultMap type="Projects" id="project_map">
+		<id property="projid" column="projid"/>
+		<result property="pname" column="pname"/>
+		<result property="beginDate" column="beginDate"/>
+		<result property="endDate" column="endDate"/>
+		<result property="iflag" column="iflag"/>
+		<association property="dept" column="deptid" javaType="Depts" select="com.nk.demo.mapper.DeptsMapper.selectDeptByID">
+			<id property="deptid" column="deptid"/>
+			<result property="dname" column="dname"/>
+			<result property="iflag" column="iflag"/>
+		</association>
+	</resultMap>
+	<sql id="project_query_conditioin">
+		<if test="projid != null and projid != ''">
+			and projid = #{projid}
+		</if>
+		<if test="pname != null and pname != ''">
+			and pname like '%${pname}%'
+		</if>
+		<if test="beginDate != null and beginDate != ''">
+			and beginDate &lt;= #{beginDate}
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and endDate &gt;= #{endDate}
+		</if>
+	</sql>
+	<select id="selectProjectsByCondition" resultMap="project_map" parameterType="ProjectSearchVO">
+		SELECT * FROM projects
+		<where>
+			<include refid="project_query_conditioin"/>
+		</where>
+		limit #{startIndex},#{pagecount}
+	</select>
+	<select id="selectProjectTotalCount" resultType="int" parameterType="ProjectSearchVO">
+		SELECT count(projid) FROM projects
+		<where>
+			<include refid="project_query_conditioin"/>
+		</where>
+	</select>
+	<update id="updateProjectFlagByID" parameterType="UpdateProjectFlagVO">
+		update projects set iflag = #{iflag} where projid = #{projid}
+	</update>
+
+	<select id="selectProjectByID" resultMap="project_map" parameterType="int">
+		SELECT * FROM projects where projid = #{id}
+	</select>
+
+
+</mapper>
